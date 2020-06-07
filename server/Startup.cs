@@ -13,10 +13,8 @@ namespace server
 
         public void Configure(IApplicationBuilder app){
             
-            app.UseSignalR(hubRouteBuilder => {
-                hubRouteBuilder.MapHub<SomeHub>(HubConfiguration.Name);
-            });
-
+            app.UseRouting();
+            app.UseEndpoints(routeBuilder => routeBuilder.MapHub<SomeHub>(HubConfiguration.Name));
             app.Run(context => {
                 return context.Response.WriteAsync("Hello world");
             });
