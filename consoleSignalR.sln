@@ -6,6 +6,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client", "client\client.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "server\server.csproj", "{15E2FB4E-BF99-40AE-8827-B757E0A82E4C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tictactoe", "tictactoe", "{4B3B4ABC-5540-4FA6-977B-70CAC5C56740}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "consoleApp", "tictactoe\consoleApp\consoleApp.fsproj", "{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "corelib", "tictactoe\corelib\corelib.fsproj", "{D879B9B2-2BA8-4659-99ED-785C9088AC98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,5 +49,33 @@ Global
 		{15E2FB4E-BF99-40AE-8827-B757E0A82E4C}.Release|x64.Build.0 = Release|Any CPU
 		{15E2FB4E-BF99-40AE-8827-B757E0A82E4C}.Release|x86.ActiveCfg = Release|Any CPU
 		{15E2FB4E-BF99-40AE-8827-B757E0A82E4C}.Release|x86.Build.0 = Release|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Debug|x64.Build.0 = Debug|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Debug|x86.Build.0 = Debug|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Release|x64.ActiveCfg = Release|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Release|x64.Build.0 = Release|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Release|x86.ActiveCfg = Release|Any CPU
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB}.Release|x86.Build.0 = Release|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Debug|x64.Build.0 = Debug|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Debug|x86.Build.0 = Debug|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Release|x64.ActiveCfg = Release|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Release|x64.Build.0 = Release|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Release|x86.ActiveCfg = Release|Any CPU
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A30E29B-A2C5-4977-BD1E-27EC3C756CCB} = {4B3B4ABC-5540-4FA6-977B-70CAC5C56740}
+		{D879B9B2-2BA8-4659-99ED-785C9088AC98} = {4B3B4ABC-5540-4FA6-977B-70CAC5C56740}
 	EndGlobalSection
 EndGlobal
