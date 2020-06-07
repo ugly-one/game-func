@@ -5,6 +5,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.AspNetCore.SignalR
 open Microsoft.AspNetCore.SignalR.Client
 open System.Threading
+open Corelib.Game
 
 type SomeHub() = 
     inherit Hub() // inherit from Hub<a'> I think I will get type safety - https://www.codesuji.com/2019/02/19/Building-Game-with-SignalR-and-F/
@@ -42,6 +43,8 @@ let main argv =
     connection.On<string, string>("ReceiveMessage", fun arg1 arg2 -> printfn "received from server: %s %s" arg1 arg2) |> ignore
     connection.StartAsync().Wait()
 
+
+    let game = startGame ()
     while true do 
         printfn "Enter your message"
         let input = Console.ReadLine()
