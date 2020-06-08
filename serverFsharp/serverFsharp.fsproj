@@ -4,14 +4,18 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\tictactoe\corelib\corelib.fsproj" />
+    <ProjectReference Include="../tictactoe/consoleApp/consoleApp.fsproj">
+      <Name>consoleApp.fsproj</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\tictactoe\corelib\corelib.fsproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>

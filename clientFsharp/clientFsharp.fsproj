@@ -11,6 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\tictactoe\corelib\corelib.fsproj" />
+    <ProjectReference Include="..\tictactoe\consoleApp\consoleApp.fsproj" />
   </ItemGroup>
 
 </Project>

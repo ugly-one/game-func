@@ -3,16 +3,48 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.AspNetCore.SignalR
-open Microsoft.AspNetCore.SignalR.Client
 open System.Threading
 open Corelib.Game
+open Newtonsoft.Json
 
 type SomeHub() = 
     inherit Hub() // inherit from Hub<a'> I think I will get type safety - https://www.codesuji.com/2019/02/19/Building-Game-with-SignalR-and-F/
 
-    member x.SendMessage arg1 arg2 = 
-        printfn "Server: Someone send me a message: %s %s, let me send it to all clients" arg1 arg2
-        x.Clients.All.SendAsync("ReceiveMessage", "from server", arg2) |> ignore
+    let mutable board = None
+    let mutable availableActions = None
+
+    member x.StartGame () = 
+        printfn "received a request to start a new game"
+        let (b, actionResult) = startGame()
+        board <- Some b
+        availableActions <- match actionResult with 
+                                | GameInProgress (actions, player) -> Some actions
+                                | GameWon player -> None
+                                | GameTied -> None
+
+        let actionIds = seq [1..9] |> Array.ofSeq
+        // tell clients about the new game
+        let serializedBoard = JsonConvert.SerializeObject b
+        x.Clients.All.SendAsync("GameStarted", serializedBoard, actionIds) |> ignore
+
+    member x.MakeAction (actionId:int) = 
+        printfn "received a request to make a move %i" actionId
+
+        // TODO looks like I get a new instance of a Hub for each request. I need to share state somehow
+        match availableActions with 
+        | None -> ()
+        | Some actions -> let (action, cellPosition) = List.head actions
+                          let (b, actionResult) = action()
+                          board <- Some b
+                          availableActions <- match actionResult with 
+                                                    | GameInProgress (actions, player) -> Some actions
+                                                    | GameWon player -> None
+                                                    | GameTied -> None
+        
+        let serializedBoard = JsonConvert.SerializeObject board.Value
+        let actionIds = seq [1..9] |> Array.ofSeq
+
+        x.Clients.All.SendAsync("GameStarted", serializedBoard, actionIds) |> ignore
 
 type Startup() =
     member __.ConfigureServices(services: IServiceCollection) =
@@ -23,6 +55,7 @@ type Startup() =
         app.UseEndpoints( fun builder -> builder.MapHub<SomeHub>("SomeHub") |> ignore ) |> ignore
         ()
 
+
 [<EntryPoint>]
 let main argv =
     let host =
@@ -31,23 +64,6 @@ let main argv =
           .UseStartup<Startup>()
           .Build()
 
-    async { host.Run() } |> Async.Start |> ignore // just start the server and move on with our live :) we have stuff to do below
-
-    Thread.Sleep(2000); // let's give the server a bit of time to stand up :)
-
-    let connection = 
-        (HubConnectionBuilder())
-            .WithUrl("http://localhost:5000/SomeHub")
-            .Build()
-
-    connection.On<string, string>("ReceiveMessage", fun arg1 arg2 -> printfn "received from server: %s %s" arg1 arg2) |> ignore
-    connection.StartAsync().Wait()
-
-
-    let game = startGame ()
-    while true do 
-        printfn "Enter your message"
-        let input = Console.ReadLine()
-        connection.SendAsync("SendMessage", "client1", input).Wait()
-
+    host.Run()
+    
     0 // return an integer exit code
