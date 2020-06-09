@@ -21,13 +21,15 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
 
     [<HttpGet("start")>]
     member __.Get()  =
-        let (board, actionResult) = startGame ()
-        gameCache.Update board actionResult
+        let (board, actionResult) = startGame()
+        let guid = Guid.NewGuid()
+        gameCache.Update board actionResult guid
+        let test = (board, guid)
         hub.Clients.All.SendAsync("Test", JsonConvert.SerializeObject board) |> ignore
-        JsonConvert.SerializeObject board
+        JsonConvert.SerializeObject test
 
-    [<HttpGet("move/{id}", Name="ha")>]
-    member __.Get (id:int) = 
+    [<HttpGet("move/{playerGuid}/{id}", Name="ha")>]
+    member __.Move (playerGuid: Guid) (id:int) = 
         printfn "%i" id
         let actionResult = gameCache.GetLastActionResult
         match actionResult with 
@@ -37,6 +39,6 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
             let actionsArray = Array.ofList actions
             let (action, position) : (Action * CellPosition) = actionsArray.[id]
             let (board, actionResult) = action()
-            gameCache.Update board actionResult
+            gameCache.Update board actionResult playerGuid // TODO it shouldn't be necessary to provide GUID now
             hub.Clients.All.SendAsync("Test", JsonConvert.SerializeObject board) |> ignore
             JsonConvert.SerializeObject board
