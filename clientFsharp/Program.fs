@@ -8,19 +8,22 @@ open Newtonsoft.Json
 let main argv =
     let connection = 
         (HubConnectionBuilder())
-            .WithUrl("http://localhost:5000/SomeHub")
+            .WithUrl("http://localhost:5000/GameHub")
             .Build()
 
-    connection.On<string, int[]>("GameStarted", fun boardJson ids -> JsonConvert.DeserializeObject<Board> boardJson |> UI.printBoardWithEmptyFieldsAndPlayers ) |> ignore
+    let f (json:string) = 
+        // printfn "RECEIVED %s" json
+        let a = JsonConvert.DeserializeObject<Board> json
+        // printfn "NOT CRASHED"
+        printBoardWithEmptyFieldsAndPlayers a
+        ()
+
+    connection.On<string>("Test", fun s -> f s) |> ignore
     connection.StartAsync().Wait()
 
-    printfn "press enter to start the game"
-    let input = Console.ReadLine()
-    connection.SendAsync("StartGame").Wait()
     while true do 
-        printfn "press enter to make an action"
         Console.ReadLine() |> ignore
-        connection.SendAsync("MakeAction", 4).Wait()
+        // connection.SendAsync("MakeAction", 4).Wait()
 
     0 // return an integer exit code
 

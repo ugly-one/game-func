@@ -16,22 +16,6 @@ module Game =
     }
     
     type Board = Cell list
-
-    // [<CLIMutable>]
-    // type CellPositionDTO = HorizontalPosDTO * VerticalPosDTO
-
-    // type CellStateDTO = 
-    //     | Empty = 1
-    //     | Occupied = 2 of    
-
-    // [<CLIMutable>]
-    // type CellDTO = {
-    //     Pos: CellPositionDTO
-    //     State: CellStateDTO
-    // }
-
-    // [<CLIMutable>]
-    // type BoardDTO = { Cells: CellDTO[] }
     
     type Action = unit -> Board * ActionResult
     and ActionResult = 
