@@ -24,18 +24,17 @@ module GameBoard =
 
     type Msg = 
         | StartGame
-        | Move of Guid
+        | Move of string
 
     let update (msg: Msg) (state: Response) : Response =
         match msg with
         | StartGame -> 
             printfn "start clicked - doing nothing"
             state
-        | Move guid -> 
+        | Move positionString -> 
             printfn "button clicked"
             let client = new HttpClient()
-            let guidString = guid.ToString ()
-            let requestUrl = "http://localhost:5000/Game/move/" + guidString
+            let requestUrl = "http://localhost:5000/Game/move/" + positionString
 
             printfn "%s" requestUrl
             
@@ -69,7 +68,7 @@ module GameBoard =
             Button.content cellContent ]
     
     let test (response: Response)  (cell:Cell) dispatch =
-        let map = List.map (fun (guid, pos) -> (pos, guid)) response.Actions |> Map.ofList
+        let map =  Map.ofList response.Actions
         match Map.tryFind cell.Pos map with 
         | None -> fun () -> ()
         | Some guid -> fun () -> dispatch (Move guid)

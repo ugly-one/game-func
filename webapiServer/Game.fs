@@ -8,15 +8,15 @@ module Game
     type GameHub() =
         inherit Hub()
 
-    type ActionResultWithGuid = 
-        | GameInProgress of Map<Guid,Action*CellPosition>
+    type ActionResultWithMap = 
+        | GameInProgress of Map<CellPosition,Action>
         | GameWon of Player
         | GameTied
 
     type GameCache() =
 
         let mutable board: Option<Board> = None
-        let mutable lastActionResult: Option<ActionResultWithGuid> = None
+        let mutable lastActionResult: Option<ActionResultWithMap> = None
 
         member this.Update _board _lastActionResult = 
             board <- Some _board
