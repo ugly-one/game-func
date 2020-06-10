@@ -22,7 +22,7 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
     inherit ControllerBase()
 
     let hub = hub
-    let mutable gameCache = gameCache
+    let gameCache = gameCache
 
     let addGuid actionResult : ActionResultWithGuid = 
         

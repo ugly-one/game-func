@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\tictactoe\corelib\corelib.fsproj" />
     <ProjectReference Include="..\tictactoe\consoleApp\consoleApp.fsproj" />
+    <ProjectReference Include="..\webapiServer\webapiServer.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
