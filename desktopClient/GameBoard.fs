@@ -7,7 +7,6 @@ module GameBoard =
     open Avalonia.Layout
     open Corelib.Game
     open UI
-    open FSharp.Data
 
     let init = getInitialBoard
 
