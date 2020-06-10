@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GameBoard.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\tictactoe\corelib\corelib.fsproj" />
+    <ProjectReference Include="..\tictactoe\consoleApp\consoleApp.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.7" />
+    <PackageReference Include="JaggerJo.Avalonia.FuncUI" Version="0.4.0" />
+    <PackageReference Include="JaggerJo.Avalonia.FuncUI.DSL" Version="0.4.0" />
+    <PackageReference Include="JaggerJo.Avalonia.FuncUI.Elmish" Version="0.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove=".template.config\**" />
+  </ItemGroup>
+
+</Project>
