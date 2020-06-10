@@ -1,4 +1,5 @@
 ﻿namespace desktopClient
+open System.Net.Http
 
 module GameBoard =
     open Avalonia.Controls
@@ -6,6 +7,7 @@ module GameBoard =
     open Avalonia.Layout
     open Corelib.Game
     open UI
+    open FSharp.Data
 
     let init = getInitialBoard
 
@@ -15,20 +17,25 @@ module GameBoard =
         match msg with
         | StartGame -> 
             printfn "button clicked"
+            // let client = new HttpClient()
+            // let requestTask = client.GetStringAsync("http://localhost:5000/Game/move/2b6d2ca8-7699-482c-8283-6703bceaae64/4")
+            // requestTask.Wait()
+            // let response = requestTask.Result
+            // printfn "%s" response
             state
-
-    let convertPosToNumber (hPos,vPos) = 
-        let vPosNr = match vPos with 
-                        | Top -> 0
-                        | VCenter -> 1
-                        | Bottom -> 2
-        let hPosNr = match hPos with 
-                        | Left -> 0
-                        | HCenter -> 1
-                        | Right -> 2
-        (vPosNr, hPosNr)
-
+    
     let cellView (cell:Cell) dispath = 
+        let convertPosToNumber (hPos,vPos) = 
+            let vPosNr = match vPos with 
+                            | Top -> 0
+                            | VCenter -> 1
+                            | Bottom -> 2
+            let hPosNr = match hPos with 
+                            | Left -> 0
+                            | HCenter -> 1
+                            | Right -> 2
+            (vPosNr, hPosNr)
+    
         let (xPos, yPos) = cell.Pos |> convertPosToNumber
         let cellContent = match cell.State with 
                             | Empty -> ""
