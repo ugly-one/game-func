@@ -8,16 +8,19 @@ module Game
     type GameHub() =
         inherit Hub()
 
+    type ActionResultWithGuid = 
+        | GameInProgress of Map<Guid,Action*CellPosition>
+        | GameWon of Player
+        | GameTied
+
     type GameCache() =
 
         let mutable board: Option<Board> = None
-        let mutable lastActionResult: Option<ActionResult> = None
-        let mutable playerXGuid: Guid = Guid.Empty
+        let mutable lastActionResult: Option<ActionResultWithGuid> = None
 
-        member this.Update _board _lastActionResult _playerXGuid = 
+        member this.Update _board _lastActionResult = 
             board <- Some _board
             lastActionResult <- Some _lastActionResult
-            playerXGuid <- _playerXGuid
 
         member this.GetLastActionResult = 
             match lastActionResult with 
