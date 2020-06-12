@@ -23,14 +23,10 @@ module GameBoard =
         JsonConvert.DeserializeObject<Response> response
 
     type Msg = 
-        | StartGame
         | Move of string
 
-    let update (msg: Msg) (state: Response) : Response =
+    let update (msg: Msg) : Response =
         match msg with
-        | StartGame -> 
-            printfn "start clicked - doing nothing"
-            state
         | Move (positionString) -> 
             printfn "button clicked"
             let client = new HttpClient()
