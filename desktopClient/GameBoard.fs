@@ -1,6 +1,7 @@
 ﻿namespace desktopClient
 open System.Net.Http
 open System
+open Avalonia.FuncUI.Helpers
 
 module GameBoard =
     open Avalonia.Controls
@@ -11,16 +12,15 @@ module GameBoard =
     open Newtonsoft.Json
     open webapiServer.Controllers
 
-    let getInitialBoard () = 
+    let gameUrl = "http://localhost:5000/Game/"  
+
+    let init = 
         let client = new HttpClient()
-        let requestTask = client.GetStringAsync("http://localhost:5000/Game/start")
+        let requestTask = client.GetStringAsync(gameUrl + "start")
         requestTask.Wait()
         let response = requestTask.Result
         printfn "%s" response
         JsonConvert.DeserializeObject<Response> response
-
-    let init = 
-        getInitialBoard ()
 
     type Msg = 
         | StartGame
@@ -31,58 +31,36 @@ module GameBoard =
         | StartGame -> 
             printfn "start clicked - doing nothing"
             state
-        | Move positionString -> 
+        | Move (positionString) -> 
             printfn "button clicked"
             let client = new HttpClient()
-            let requestUrl = "http://localhost:5000/Game/move/" + positionString
-
-            printfn "%s" requestUrl
+            let requestUrl = gameUrl + "move/" + positionString
             
             let requestTask = client.GetStringAsync(requestUrl)
             requestTask.Wait()
             let response = requestTask.Result
-            printfn "%s" response
-            JsonConvert.DeserializeObject<Response> response
-    
-    let cellView (cell:Cell) dispatchMsg = 
-        let convertPosToNumber (hPos,vPos) = 
-            let vPosNr = match vPos with 
-                            | Top -> 0
-                            | VCenter -> 1
-                            | Bottom -> 2
-            let hPosNr = match hPos with 
-                            | Left -> 0
-                            | HCenter -> 1
-                            | Right -> 2
-            (vPosNr, hPosNr)
-    
-        let (xPos, yPos) = cell.Pos |> convertPosToNumber
-        let cellContent = match cell.State with 
-                            | Empty -> ""
-                            | Occupied player -> getPlayerRepresentation player
+            let responseTyped = JsonConvert.DeserializeObject<Response> response
 
-        Button.create
-          [ Button.row xPos
-            Button.column yPos
-            Button.onClick (fun a -> dispatchMsg() )
-            Button.content cellContent ]
-    
-    let test (response: Response)  (cell:Cell) dispatch =
-        let map =  Map.ofList response.Actions
-        match Map.tryFind cell.Pos map with 
-        | None -> fun () -> ()
-        | Some guid -> fun () -> dispatch (Move guid)
+            // update all cells, in theory I could update only the 
+            responseTyped.Board |> List.map (Cell.update ()) |> ignore
+            responseTyped
+
 
     let view (state: Response) (dispatch) =
-        DockPanel.create [
-            DockPanel.children [
-                Grid.create
-                    [ 
-                      Grid.rowDefinitions (RowDefinitions("50,50,50"))
-                      Grid.columnDefinitions (ColumnDefinitions("50,50,50"))
-                      Grid.horizontalAlignment HorizontalAlignment.Stretch
-                      Grid.verticalAlignment VerticalAlignment.Stretch
-                      Grid.children [ for cell in state.Board do yield cellView cell (test state cell dispatch)]
-                    ]
+        let a cell  = 
+            let map =  Map.ofList state.Actions
+            match Map.tryFind cell.Pos map with 
+            | None -> ()
+            | Some guid -> dispatch (Move guid)
+        
+        let cells = 
+            state.Board |> List.map (fun cell -> Cell.view cell (fun _ -> a cell )) |> List.map generalize
+
+        Grid.create
+            [ 
+              Grid.rowDefinitions (RowDefinitions("50,50,50"))
+              Grid.columnDefinitions (ColumnDefinitions("50,50,50"))
+              Grid.horizontalAlignment HorizontalAlignment.Stretch
+              Grid.verticalAlignment VerticalAlignment.Stretch
+              Grid.children [ yield! cells ]
             ]
-        ]       
