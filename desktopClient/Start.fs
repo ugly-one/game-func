@@ -24,6 +24,7 @@ module Start =
                 GameInProgress (GameBoard.update gameMsg)
 
     let view state dispatch = 
+        
         match state with 
         | Empty -> 
             DockPanel.create [ DockPanel.children [
@@ -35,6 +36,9 @@ module Start =
                     ]
             ]]
         | GameInProgress gameState -> 
-            DockPanel.create [ DockPanel.children [
-                GameBoard.view gameState (fun boardMsg -> (dispatch (BoardMsg boardMsg)))
-            ]]
+            let gameBoard = GameBoard.view gameState (fun boardMsg -> (dispatch (BoardMsg boardMsg)))
+            DockPanel.create [ 
+                DockPanel.children [ gameBoard ]
+                DockPanel.horizontalAlignment HorizontalAlignment.Center
+                DockPanel.verticalAlignment VerticalAlignment.Center
+                ]
