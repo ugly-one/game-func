@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.fs" />
+    <Compile Include="Something.fs" />
     <Compile Include="Controllers/GameController.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
