@@ -21,9 +21,6 @@ type GameStateResponse = {
 type GameController (gameCache : GameCache, hub : GameHub2) =
     inherit ControllerBase()
 
-    let hub = hub
-    let gameCache = gameCache
-
     let covertToMap actionResult : (ActionResultWithMap* Player option) = 
         let convertToMap actions = (List.map (fun (action,pos) -> (pos,action)) actions) |> Map.ofList
         match actionResult with
