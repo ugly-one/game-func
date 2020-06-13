@@ -21,6 +21,7 @@ let main argv =
     connection.On<string>("Test", fun s -> f s) |> ignore
     connection.StartAsync().Wait()
 
+    Console.WriteLine("connected")
     while true do 
         Console.ReadLine() |> ignore
         // connection.SendAsync("MakeAction", 4).Wait()

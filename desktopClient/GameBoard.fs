@@ -2,6 +2,7 @@
 open System.Net.Http
 open System
 open Avalonia.FuncUI.Helpers
+open Microsoft.AspNetCore.SignalR.Client
 
 module GameBoard =
     open Avalonia.Controls
@@ -15,6 +16,13 @@ module GameBoard =
     let gameUrl = "http://localhost:5000/Game/"  
 
     let init = 
+        let connection = 
+            (HubConnectionBuilder())
+                .WithUrl("http://localhost:5000/gameHub")
+                .Build()
+
+        connection.On<string>("Test", fun s -> (printfn "received stuff from SignalR")) |> ignore
+        connection.StartAsync() |> ignore
         let client = new HttpClient()
         let requestTask = client.GetStringAsync(gameUrl + "start")
         requestTask.Wait()
