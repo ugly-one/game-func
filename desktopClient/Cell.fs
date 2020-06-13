@@ -1,6 +1,5 @@
 namespace desktopClient
-open System.Net.Http
-open System
+open Avalonia
 
 module Cell =
     open Avalonia.Controls
@@ -32,5 +31,7 @@ module Cell =
         Button.create
           [ Button.row xPos
             Button.column yPos
+            Button.borderThickness (Thickness 2.0)
+            Button.borderBrush "White"
             Button.onClick ((fun a -> dispatch ()), Always)
             Button.content cellContent ]

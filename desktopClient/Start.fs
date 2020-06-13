@@ -27,14 +27,16 @@ module Start =
         
         match state with 
         | Empty -> 
-            DockPanel.create [ DockPanel.children [
-                Button.create [
-                    Button.content "Start new game"
-                    Button.onClick (fun _ -> dispatch StartGame)
-                    Button.height 100.0
-                    Button.width 200.0
-                    ]
-            ]]
+            DockPanel.create [ 
+                DockPanel.width 300.0
+                DockPanel.children [
+                    Button.create [
+                        Button.dock Dock.Left
+                        Button.content "Start new game"
+                        Button.onClick (fun _ -> dispatch StartGame)
+                        Button.height 100.0
+                        Button.width 200.0
+                        ]]]
         | GameInProgress gameState -> 
             let gameBoard = GameBoard.view gameState (fun boardMsg -> (dispatch (BoardMsg boardMsg)))
             DockPanel.create [ 

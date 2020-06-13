@@ -52,11 +52,9 @@ module GameBoard =
         let cells = 
             state.Board |> List.map (fun cell -> Cell.view cell (fun _ -> a cell )) |> List.map generalize
 
-        Grid.create
-            [ 
+        Grid.create [ 
               Grid.rowDefinitions (RowDefinitions("50,50,50"))
               Grid.columnDefinitions (ColumnDefinitions("50,50,50"))
               Grid.horizontalAlignment HorizontalAlignment.Stretch
               Grid.verticalAlignment VerticalAlignment.Stretch
-              Grid.children [ yield! cells ]
-            ]
+              Grid.children [ yield! cells ]]
