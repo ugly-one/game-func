@@ -25,7 +25,7 @@ type GameController (gameCache : GameCache, hub : GameHub2) =
     let updateCacheAndSendUpdate board actionResult clientId = 
         let (map, nextPlayer) = (covertToMap actionResult)
         gameCache.Update board map 
-        let (actions, board) = convertToSerializableResponse map board
+        let actions = convertToResponseActions map
         let serializedResponse = JsonConvert.SerializeObject {Board = board; Actions = actions}
         hub.SendToAll serializedResponse |> ignore
         serializedResponse
@@ -35,7 +35,8 @@ type GameController (gameCache : GameCache, hub : GameHub2) =
         printfn "providing the state and all available actions - no signalR update"
         let actionResult = gameCache.GetLastActionResult
         let board = gameCache.GetBoard
-        convertToSerializableResponse actionResult board
+        let actions = convertToResponseActions actionResult 
+        JsonConvert.SerializeObject {Board = board; Actions = actions}
 
     [<HttpGet("start")>]
     member __.Get()  =
