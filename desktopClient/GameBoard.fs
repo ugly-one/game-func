@@ -16,13 +16,7 @@ module GameBoard =
     let gameUrl = "http://localhost:5000/Game/"  
 
     let init = 
-        let connection = 
-            (HubConnectionBuilder())
-                .WithUrl("http://localhost:5000/gameHub")
-                .Build()
-
-        connection.On<string>("Test", fun s -> (printfn "received stuff from SignalR")) |> ignore
-        connection.StartAsync() |> ignore
+        
         let client = new HttpClient()
         let requestTask = client.GetStringAsync(gameUrl + "start")
         requestTask.Wait()
@@ -32,8 +26,9 @@ module GameBoard =
 
     type Msg = 
         | Move of string
+        | NewStateFromServer of string
 
-    let update (msg: Msg) : Response =
+    let update (msg: Msg) state : Response =
         match msg with
         | Move (positionString) -> 
             printfn "button clicked"
@@ -48,6 +43,9 @@ module GameBoard =
             // update all cells, in theory I could update only the 
             responseTyped.Board |> List.map (Cell.update ()) |> ignore
             responseTyped
+        | NewStateFromServer st ->
+            printfn "new state from server %s" st
+            state
 
 
     let view (state: Response) (dispatch) =

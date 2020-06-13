@@ -7,6 +7,9 @@ open Avalonia.Input
 open Avalonia.FuncUI
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Components.Hosts
+open Microsoft.AspNetCore.SignalR.Client
+open Newtonsoft.Json
+open webapiServer.Controllers
 
 type MainWindow() as this =
     inherit HostWindow()
@@ -15,12 +18,31 @@ type MainWindow() as this =
         base.Width <- 400.0
         base.Height <- 400.0
         
+        let something state =
+
+            let sub (dispatch: Start.Message -> unit) =
+                let invoke message = 
+                    printfn "%s" message
+                    printfn "received update from server"
+                    let a = JsonConvert.DeserializeObject<Response> message
+                    UI.printBoardWithEmptyFieldsAndPlayers a.Board
+                    dispatch Start.TestMessage
+
+                let connection = 
+                    (HubConnectionBuilder())
+                        .WithUrl("http://localhost:5000/gameHub")
+                        .Build()
+
+                connection.On<string>("Test2", fun s -> invoke s )  |> ignore
+                connection.StartAsync() |> ignore
+                
+            Cmd.ofSub sub
         //this.VisualRoot.VisualRoot.Renderer.DrawFps <- true
         //this.VisualRoot.VisualRoot.Renderer.DrawDirtyRects <- true
-
-
-        Elmish.Program.mkSimple (fun () -> Start.init) Start.update Start.view
+        
+        Elmish.Program.mkProgram (fun () -> Start.init) Start.update Start.view
         |> Program.withHost this
+        |> Program.withSubscription something
         |> Program.run
 
         

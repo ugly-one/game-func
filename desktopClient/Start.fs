@@ -1,5 +1,7 @@
 namespace desktopClient
 open webapiServer.Controllers
+open Elmish
+open Microsoft.AspNetCore.SignalR.Client
 
 module Start = 
     
@@ -9,22 +11,28 @@ module Start =
 
     type Message = 
         | StartGame
+        | TestMessage
         | BoardMsg of GameBoard.Msg
     
     type State = 
         | Empty 
         | GameInProgress of Response 
 
-    let init = Empty
+
+    let init = Empty, Cmd.none
 
     let update msg (state : State) = 
         match msg with 
-            | StartGame -> GameInProgress GameBoard.init
+            | TestMessage -> 
+                printfn "test message received"
+                state, Cmd.none
+            | StartGame -> (GameInProgress GameBoard.init), Cmd.none
             | BoardMsg gameMsg -> 
-                GameInProgress (GameBoard.update gameMsg)
+                match state with 
+                | Empty -> failwith "he?!"
+                | GameInProgress state -> (GameInProgress (GameBoard.update gameMsg state)), Cmd.none
 
     let view state dispatch = 
-        
         match state with 
         | Empty -> 
             DockPanel.create [ 

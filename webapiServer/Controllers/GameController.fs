@@ -76,6 +76,8 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
                         | ActionResultWithMap.GameTied -> List.empty
         
         hub.Clients.All.SendAsync("Test", JsonConvert.SerializeObject board) |> ignore
+        hub.Clients.All.SendAsync("Test2", JsonConvert.SerializeObject {Board = board; Actions = actions}) |> ignore
+
         JsonConvert.SerializeObject {Board = board; Actions = actions}
 
 
@@ -106,4 +108,5 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
                                 | ActionResultWithMap.GameTied -> List.empty
                 
                 hub.Clients.All.SendAsync("Test", JsonConvert.SerializeObject board) |> ignore
+                hub.Clients.All.SendAsync("Test2", JsonConvert.SerializeObject {Board = board; Actions = actions}) |> ignore
                 JsonConvert.SerializeObject {Board = board; Actions = actions}
