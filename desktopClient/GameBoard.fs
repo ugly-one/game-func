@@ -15,8 +15,7 @@ module GameBoard =
 
     let gameUrl = "http://localhost:5000/Game/"  
 
-    let init = 
-        
+    let initNewGame () = 
         let client = new HttpClient()
         let requestTask = client.GetStringAsync(gameUrl + "start")
         requestTask.Wait()
@@ -24,39 +23,35 @@ module GameBoard =
         printfn "%s" response
         JsonConvert.DeserializeObject<Response> response
 
+    let initJoinGame () = 
+        let client = new HttpClient()
+        let requestTask = client.GetStringAsync(gameUrl + "game")
+        requestTask.Wait()
+        let response = requestTask.Result
+        printfn "%s" response
+        JsonConvert.DeserializeObject<Response> response
+
     type Msg = 
-        | Move of string
-        | NewStateFromServer of Response
+        | CellClicked of string
 
     let update (msg: Msg) state : Response =
         match msg with
-        | Move (positionString) -> 
+        | CellClicked (positionString) -> 
             printfn "button clicked"
             let client = new HttpClient()
             let requestUrl = gameUrl + "move/" + positionString
-            
-            let requestTask = client.GetStringAsync(requestUrl)
-            // requestTask.Wait()
-            // let response = requestTask.Result
-            // let responseTyped = JsonConvert.DeserializeObject<Response> response
-
-            // // update all cells, in theory I could update only the 
-            // responseTyped.Board |> List.map (Cell.update ()) |> ignore
-            // responseTyped
+            client.GetStringAsync(requestUrl) |> ignore
             state
 
-        | NewStateFromServer st -> st
-
-
     let view (state: Response) (dispatch) =
-        let a cell  = 
+        let getDispatchFunction cell  = 
             let map =  Map.ofList state.Actions
             match Map.tryFind cell.Pos map with 
             | None -> ()
-            | Some guid -> dispatch (Move guid)
+            | Some guid -> dispatch (CellClicked guid)
         
         let cells = 
-            state.Board |> List.map (fun cell -> Cell.view cell (fun _ -> a cell )) |> List.map generalize
+            state.Board |> List.map (fun cell -> Cell.view cell (fun _ -> getDispatchFunction cell )) |> List.map generalize
 
         Grid.create [ 
               Grid.rowDefinitions (RowDefinitions("50,50,50"))

@@ -2,8 +2,6 @@ namespace desktopClient
 open webapiServer.Controllers
 open Elmish
 open Microsoft.AspNetCore.SignalR.Client
-open System.Net.Http
-open Newtonsoft.Json
 
 module Start = 
     
@@ -12,51 +10,31 @@ module Start =
     open Avalonia.Layout
 
     type Message = 
-        | StartGame
-        | ObserveGame
-        | TestMessage of Response
+        | Start
+        | JoinExisting
+        | UpdateFromServer of Response
         | BoardMsg of GameBoard.Msg
     
     type State = 
         | Empty of HubConnection
         | GameInProgress of Response 
 
-
     let init hubConnection = Empty hubConnection, Cmd.none
 
     let update msg (state : State) = 
+        
+        match state with 
+        | Empty hubConnection -> hubConnection.StartAsync() |> ignore
+        | GameInProgress -> ()
+        
         match msg with 
-            | ObserveGame -> 
-                let client = new HttpClient()
-                let requestUrl = GameBoard.gameUrl + "game"
-                
-                let requestTask = client.GetStringAsync(requestUrl)
-                requestTask.Wait()
-                let response = requestTask.Result
-                let responseTyped = JsonConvert.DeserializeObject<Response> response
-
-                match state with 
-                    | Empty conn -> 
-                        conn.StartAsync() |> ignore
-                    | GameInProgress state -> failwith "he?!"
-                    
-                (GameInProgress responseTyped, Cmd.none)
-
-            | TestMessage response -> 
-                printfn "test message received"
-                (GameInProgress (GameBoard.update (GameBoard.NewStateFromServer response) response)), Cmd.none
-
-            | StartGame -> 
-                match state with 
-                | Empty conn -> 
-                    conn.StartAsync() |> ignore
-                    (GameInProgress GameBoard.init), Cmd.none
-                | GameInProgress state -> failwith "he?!"
-
-            | BoardMsg gameMsg -> 
-                match state with 
-                | Empty _ -> failwith "he?!"
-                | GameInProgress state -> (GameInProgress (GameBoard.update gameMsg state)), Cmd.none
+        | JoinExisting -> (GameInProgress (GameBoard.initJoinGame ())), Cmd.none
+        | UpdateFromServer response -> GameInProgress response, Cmd.none
+        | Start -> (GameInProgress (GameBoard.initNewGame())), Cmd.none
+        | BoardMsg gameMsg ->
+            match state with 
+            | Empty _ -> failwith "he?!"
+            | GameInProgress state -> (GameInProgress (GameBoard.update gameMsg state)), Cmd.none
 
     let view state dispatch = 
         match state with 
@@ -67,13 +45,13 @@ module Start =
                 StackPanel.children [
                     Button.create [
                         Button.content "Start new game"
-                        Button.onClick (fun _ -> dispatch StartGame)
+                        Button.onClick (fun _ -> dispatch Start)
                         Button.height 100.0
                         Button.width 200.0
                         ]
                     Button.create [
                         Button.content "Connect to existing"
-                        Button.onClick (fun _ -> dispatch ObserveGame)
+                        Button.onClick (fun _ -> dispatch JoinExisting)
                         Button.height 100.0
                         Button.width 200.0
                         ] 

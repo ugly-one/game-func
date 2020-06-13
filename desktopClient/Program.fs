@@ -31,11 +31,9 @@ type MainWindow() as this =
                     printfn "received update from server"
                     let a = JsonConvert.DeserializeObject<Response> message
                     UI.printBoardWithEmptyFieldsAndPlayers a.Board
-                    dispatch (Start.TestMessage a)
-
+                    dispatch (Start.UpdateFromServer a)
 
                 connection.On<string>("Test2", fun s -> invoke s )  |> ignore
-
                 
             Cmd.ofSub sub
         
