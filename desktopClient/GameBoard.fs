@@ -26,7 +26,7 @@ module GameBoard =
 
     type Msg = 
         | Move of string
-        | NewStateFromServer of string
+        | NewStateFromServer of Response
 
     let update (msg: Msg) state : Response =
         match msg with
@@ -36,16 +36,16 @@ module GameBoard =
             let requestUrl = gameUrl + "move/" + positionString
             
             let requestTask = client.GetStringAsync(requestUrl)
-            requestTask.Wait()
-            let response = requestTask.Result
-            let responseTyped = JsonConvert.DeserializeObject<Response> response
+            // requestTask.Wait()
+            // let response = requestTask.Result
+            // let responseTyped = JsonConvert.DeserializeObject<Response> response
 
-            // update all cells, in theory I could update only the 
-            responseTyped.Board |> List.map (Cell.update ()) |> ignore
-            responseTyped
-        | NewStateFromServer st ->
-            printfn "new state from server %s" st
+            // // update all cells, in theory I could update only the 
+            // responseTyped.Board |> List.map (Cell.update ()) |> ignore
+            // responseTyped
             state
+
+        | NewStateFromServer st -> st
 
 
     let view (state: Response) (dispatch) =

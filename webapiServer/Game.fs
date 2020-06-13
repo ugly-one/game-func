@@ -22,6 +22,7 @@ module Game
             board <- Some _board
             lastActionResult <- Some _lastActionResult
 
+        member this.GetBoard = board.Value
         member this.GetLastActionResult = 
             match lastActionResult with 
             | Some result -> result

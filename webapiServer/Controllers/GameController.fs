@@ -60,6 +60,22 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
     let createPosition (hp, vp) =
         (createHPosition hp, createVPosition vp)
 
+    [<HttpGet("game")>]
+    member __.GetGame() =
+        let actionResult : ActionResultWithMap = gameCache.GetLastActionResult
+        let board = gameCache.GetBoard
+
+        let positionToString (hPos,vPos) =
+            let (s1,s2) = getPositionRepresentatin (hPos,vPos)
+            s1 + "/" + s2
+
+        let actions = match actionResult with
+                        | ActionResultWithMap.GameInProgress map -> map |> Map.toList |> List.map fst |> List.map (fun pos -> (pos, positionToString pos))
+                        | ActionResultWithMap.GameWon p -> List.empty
+                        | ActionResultWithMap.GameTied -> List.empty
+        
+        JsonConvert.SerializeObject {Board = board; Actions = actions}
+
     [<HttpGet("start")>]
     member __.Get()  =
         let (board, actionResult) = startGame()
