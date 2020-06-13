@@ -14,6 +14,7 @@ module Start =
         | JoinExisting
         | UpdateFromServer of Response
         | BoardMsg of GameBoard.Msg
+        | SendTestMessage
     
     type State = 
         | Empty of HubConnection
@@ -35,6 +36,14 @@ module Start =
             match state with 
             | Empty _ -> failwith "he?!"
             | GameInProgress state -> (GameInProgress (GameBoard.update gameMsg state)), Cmd.none
+        | SendTestMessage -> 
+            match state with 
+            | Empty hubConnection -> 
+                hubConnection.StartAsync() |> ignore
+                hubConnection.SendAsync("Test") |> ignore
+                state, Cmd.none
+            | GameInProgress -> state, Cmd.none
+        
 
     let view state dispatch = 
         match state with 
@@ -52,6 +61,12 @@ module Start =
                     Button.create [
                         Button.content "Connect to existing"
                         Button.onClick (fun _ -> dispatch JoinExisting)
+                        Button.height 100.0
+                        Button.width 200.0
+                        ] 
+                    Button.create [
+                        Button.content "Send message to SignalR"
+                        Button.onClick (fun _ -> dispatch SendTestMessage)
                         Button.height 100.0
                         Button.width 200.0
                         ] 

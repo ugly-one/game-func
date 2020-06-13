@@ -23,6 +23,8 @@ type Startup private () =
         // Add framework services.
         services.AddControllers() |> ignore
         services.AddSingleton<GameCache>() |> ignore
+        services.AddSingleton<GameHub>() |> ignore
+        services.AddSingleton<GameHub2>() |> ignore
         services.AddSignalR() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

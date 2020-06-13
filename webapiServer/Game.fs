@@ -5,13 +5,26 @@ module Game
     open Microsoft.AspNetCore.SignalR;
     open Corelib.Game
 
-    type GameHub() =
-        inherit Hub()
-
     type ActionResultWithMap = 
         | GameInProgress of Map<CellPosition,Action>
         | GameWon of Player
         | GameTied
+        
+    type GameHub() =
+        inherit Hub()
+
+        member x.Test () =
+            let connectionId = x.Context.ConnectionId
+            printfn "CONNECTION ID %s" connectionId
+        member x.Internal () =
+            x.Context.ConnectionId
+
+    type GameHub2 (hubContext : IHubContext<GameHub>, gameHub : GameHub) = 
+        member x.GetConnectionId = 
+            gameHub.Context.ConnectionId
+
+        member x.SendToAll (object : string) = 
+            gameHub.Clients.All.SendAsync("Test2", object)
 
     type GameCache() =
 

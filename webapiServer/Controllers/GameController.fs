@@ -18,21 +18,20 @@ type Response = {
 
 [<ApiController>]
 [<Route("[controller]")>]
-type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
+type GameController (gameCache : GameCache, hub : GameHub2) =
     inherit ControllerBase()
 
     let hub = hub
     let gameCache = gameCache
 
-
-    let covertToMap actionResult : ActionResultWithMap = 
-        let a actions = (List.map (fun (action,pos) -> (pos,action)) actions) |> Map.ofList
+    let covertToMap actionResult : (ActionResultWithMap* Player option) = 
+        let convertToMap actions = (List.map (fun (action,pos) -> (pos,action)) actions) |> Map.ofList
         match actionResult with
-                | GameInProgress (actions,player) -> ActionResultWithMap.GameInProgress (a actions)
-                | GameWon p -> ActionResultWithMap.GameWon p
-                | GameTied -> ActionResultWithMap.GameTied
+                | GameInProgress (actions, player) -> (ActionResultWithMap.GameInProgress (convertToMap actions), Some player)
+                | GameWon p -> (ActionResultWithMap.GameWon p, None)
+                | GameTied -> (ActionResultWithMap.GameTied, None)
 
-    let getPositionRepresentatin (hor, ver) = 
+    let getPositionRepresentation (hor, ver) = 
         let horString = match hor with 
                         | Left -> "0"
                         | HCenter -> "1"
@@ -60,10 +59,9 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
     let createPosition (hp, vp) =
         (createHPosition hp, createVPosition vp)
 
-
-    let getResponse actionResult board = 
+    let convertToSerializableResponse actionResult board = 
         let positionToString (hPos,vPos) =
-            let (s1,s2) = getPositionRepresentatin (hPos,vPos)
+            let (s1,s2) = getPositionRepresentation (hPos,vPos)
             s1 + "/" + s2
 
         let actions = match actionResult with
@@ -71,31 +69,33 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
                         | ActionResultWithMap.GameWon p -> List.empty
                         | ActionResultWithMap.GameTied -> List.empty
         
-        {Board = board; Actions = actions}
+        JsonConvert.SerializeObject {Board = board; Actions = actions}
         
-    let updateCacheAndSendUpdate board actionResult = 
-        let map = (covertToMap actionResult)
-        gameCache.Update board map
-        let response = getResponse map board
-        let serializedResponse = JsonConvert.SerializeObject response
-        hub.Clients.All.SendAsync("Test2", serializedResponse) |> ignore
+    let updateCacheAndSendUpdate board actionResult clientId = 
+        let (map, nextPlayer) = (covertToMap actionResult)
+        gameCache.Update board map 
+        let serializedResponse = convertToSerializableResponse map board
+        hub.SendToAll serializedResponse |> ignore
         serializedResponse
 
     [<HttpGet("game")>]
     member __.GetGame() =
-        let actionResult : ActionResultWithMap = gameCache.GetLastActionResult
+        printfn "providing the state and all available actions - no signalR update"
+        let actionResult = gameCache.GetLastActionResult
         let board = gameCache.GetBoard
-        JsonConvert.SerializeObject (getResponse actionResult board)
+        convertToSerializableResponse actionResult board
 
     [<HttpGet("start")>]
     member __.Get()  =
-        let (board, actionResult) = startGame()
-        updateCacheAndSendUpdate board actionResult
+        printfn "starting a new game"
+        printfn "connectio id from controller %s" hub.GetConnectionId
+        let (board, actionResult) = startGame ()
+        updateCacheAndSendUpdate board actionResult hub.GetConnectionId
 
     [<HttpGet("move/{hp}/{vp}")>]
     member __.Move (hp: int) (vp : int) = 
-        printfn "horizontal pos: %i verticalPos: %i" hp vp 
-        let actionResult : ActionResultWithMap = gameCache.GetLastActionResult
+        printfn "horizontal pos: %i verticalPos: %i - clientid: %s" hp vp hub.GetConnectionId 
+        let actionResult = gameCache.GetLastActionResult
         match actionResult with 
         | ActionResultWithMap.GameWon p -> "the game has been won - nothing to move"
         | ActionResultWithMap.GameTied -> "game ended with a draw - nothing to move"
@@ -106,4 +106,4 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
             | None -> "This action is not available"
             | Some action -> 
                 let (board, actionResult) = action()
-                updateCacheAndSendUpdate board actionResult
+                updateCacheAndSendUpdate board actionResult hub.GetConnectionId
