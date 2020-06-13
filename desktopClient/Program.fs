@@ -29,7 +29,7 @@ type MainWindow() as this =
                 let invoke message = 
                     printfn "%s" message
                     printfn "received update from server"
-                    let a = JsonConvert.DeserializeObject<Response> message
+                    let a = JsonConvert.DeserializeObject<GameStateResponse> message
                     UI.printBoardWithEmptyFieldsAndPlayers a.Board
                     dispatch (Start.UpdateFromServer a)
 

@@ -12,13 +12,13 @@ module Start =
     type Message = 
         | Start
         | JoinExisting
-        | UpdateFromServer of Response
+        | UpdateFromServer of GameStateResponse
         | BoardMsg of GameBoard.Msg
         | SendTestMessage
     
     type State = 
         | Empty of HubConnection
-        | GameInProgress of Response 
+        | GameInProgress of GameStateResponse 
 
     let init hubConnection = Empty hubConnection, Cmd.none
 

@@ -11,7 +11,7 @@ open Microsoft.AspNetCore.SignalR
 open Corelib.Game
 open Newtonsoft.Json
 
-type Response = {
+type GameStateResponse = {
     Board: Board
     Actions: (CellPosition*string) list
 }

@@ -21,7 +21,7 @@ module GameBoard =
         requestTask.Wait()
         let response = requestTask.Result
         printfn "%s" response
-        JsonConvert.DeserializeObject<Response> response
+        JsonConvert.DeserializeObject<GameStateResponse> response
 
     let initJoinGame () = 
         let client = new HttpClient()
@@ -29,12 +29,12 @@ module GameBoard =
         requestTask.Wait()
         let response = requestTask.Result
         printfn "%s" response
-        JsonConvert.DeserializeObject<Response> response
+        JsonConvert.DeserializeObject<GameStateResponse> response
 
     type Msg = 
         | CellClicked of string
 
-    let update (msg: Msg) state : Response =
+    let update (msg: Msg) state : GameStateResponse =
         match msg with
         | CellClicked (positionString) -> 
             printfn "button clicked"
@@ -43,7 +43,7 @@ module GameBoard =
             client.GetStringAsync(requestUrl) |> ignore
             state
 
-    let view (state: Response) (dispatch) =
+    let view (state: GameStateResponse) (dispatch) =
         let getDispatchFunction cell  = 
             let map =  Map.ofList state.Actions
             match Map.tryFind cell.Pos map with 
