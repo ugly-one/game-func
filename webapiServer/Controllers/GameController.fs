@@ -60,11 +60,8 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
     let createPosition (hp, vp) =
         (createHPosition hp, createVPosition vp)
 
-    [<HttpGet("game")>]
-    member __.GetGame() =
-        let actionResult : ActionResultWithMap = gameCache.GetLastActionResult
-        let board = gameCache.GetBoard
 
+    let getResponse actionResult board = 
         let positionToString (hPos,vPos) =
             let (s1,s2) = getPositionRepresentatin (hPos,vPos)
             s1 + "/" + s2
@@ -74,28 +71,26 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
                         | ActionResultWithMap.GameWon p -> List.empty
                         | ActionResultWithMap.GameTied -> List.empty
         
-        JsonConvert.SerializeObject {Board = board; Actions = actions}
+        {Board = board; Actions = actions}
+        
+    let updateCacheAndSendUpdate board actionResult = 
+        let map = (covertToMap actionResult)
+        gameCache.Update board map
+        let response = getResponse map board
+        let serializedResponse = JsonConvert.SerializeObject response
+        hub.Clients.All.SendAsync("Test2", serializedResponse) |> ignore
+        serializedResponse
+
+    [<HttpGet("game")>]
+    member __.GetGame() =
+        let actionResult : ActionResultWithMap = gameCache.GetLastActionResult
+        let board = gameCache.GetBoard
+        JsonConvert.SerializeObject (getResponse actionResult board)
 
     [<HttpGet("start")>]
     member __.Get()  =
         let (board, actionResult) = startGame()
-        let map = (covertToMap actionResult)
-        gameCache.Update board map
-                
-        let positionToString (hPos,vPos) =
-            let (s1,s2) = getPositionRepresentatin (hPos,vPos)
-            s1 + "/" + s2
-
-        let actions = match map with
-                        | ActionResultWithMap.GameInProgress map -> map |> Map.toList |> List.map fst |> List.map (fun pos -> (pos, positionToString pos))
-                        | ActionResultWithMap.GameWon p -> List.empty
-                        | ActionResultWithMap.GameTied -> List.empty
-        
-        hub.Clients.All.SendAsync("Test", JsonConvert.SerializeObject board) |> ignore
-        hub.Clients.All.SendAsync("Test2", JsonConvert.SerializeObject {Board = board; Actions = actions}) |> ignore
-
-        JsonConvert.SerializeObject {Board = board; Actions = actions}
-
+        updateCacheAndSendUpdate board actionResult
 
     [<HttpGet("move/{hp}/{vp}")>]
     member __.Move (hp: int) (vp : int) = 
@@ -111,18 +106,4 @@ type GameController (gameCache : GameCache, hub : IHubContext<GameHub>) =
             | None -> "This action is not available"
             | Some action -> 
                 let (board, actionResult) = action()
-                let map = (covertToMap actionResult)
-                gameCache.Update board map
-                
-                let positionToString (hPos,vPos) =
-                    let (s1,s2) = getPositionRepresentatin (hPos,vPos)
-                    s1 + "/" + s2
-
-                let actions = match map with
-                                | ActionResultWithMap.GameInProgress map -> map |> Map.toList |> List.map fst |> List.map (fun pos -> (pos, positionToString pos))
-                                | ActionResultWithMap.GameWon p -> List.empty
-                                | ActionResultWithMap.GameTied -> List.empty
-                
-                hub.Clients.All.SendAsync("Test", JsonConvert.SerializeObject board) |> ignore
-                hub.Clients.All.SendAsync("Test2", JsonConvert.SerializeObject {Board = board; Actions = actions}) |> ignore
-                JsonConvert.SerializeObject {Board = board; Actions = actions}
+                updateCacheAndSendUpdate board actionResult
