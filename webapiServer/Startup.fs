@@ -11,7 +11,7 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
-open Game
+open GameHub
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -22,9 +22,8 @@ type Startup private () =
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
         services.AddControllers() |> ignore
-        services.AddSingleton<GameCache>() |> ignore
-        services.AddSingleton<GameHub>() |> ignore
-        services.AddSingleton<GameHub2>() |> ignore
+        // add gameState as singleton
+        services.AddSingleton<Game>()|> ignore
         services.AddSignalR() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

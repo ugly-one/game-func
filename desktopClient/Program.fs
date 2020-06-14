@@ -9,7 +9,7 @@ open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Components.Hosts
 open Microsoft.AspNetCore.SignalR.Client
 open Newtonsoft.Json
-open webapiServer.Controllers
+open GameBoard
 
 type MainWindow() as this =
     inherit HostWindow()
@@ -22,6 +22,8 @@ type MainWindow() as this =
             (HubConnectionBuilder())
                 .WithUrl("http://localhost:5000/gameHub")
                 .Build()
+
+        connection.StartAsync() |> ignore
 
         let something state =
 
@@ -37,7 +39,11 @@ type MainWindow() as this =
                 
             Cmd.ofSub sub
         
-        Elmish.Program.mkProgram (fun () -> Start.init connection) Start.update Start.view
+        let test () = connection.SendAsync("Test") |> ignore
+        let connect () = connection.SendAsync("Connect") |> ignore
+        let move () = connection.SendAsync("Move", 2, 2) |> ignore
+        
+        Elmish.Program.mkProgram (fun () -> Start.init ) (Start.update test connect move) Start.view
         |> Program.withHost this
         |> Program.withSubscription something
         |> Program.run

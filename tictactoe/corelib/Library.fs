@@ -17,8 +17,8 @@ module Game =
     
     type Board = Cell list
     
-    type Action = unit -> Board * ActionResult
-    and ActionResult = 
+    type Action = unit -> Board * GameState
+    and GameState = 
     | GameInProgress of ((Action*CellPosition) list * Player)
     | GameWon of Player
     | GameTied
@@ -81,7 +81,7 @@ module Game =
         List.exists (fun line -> isOwnedBy line player) cellLinesToCheck
 
     // executes move by player on given cell and returns new board and action result
-    let rec playAction board player cellPosition : Board*ActionResult = 
+    let rec playAction board player cellPosition : Board*GameState = 
         let newCell = {Pos = cellPosition; State = Occupied(player)}
         let newBoard = updateBoard newCell board
 
@@ -94,9 +94,17 @@ module Game =
             (newBoard, GameInProgress((availableActions, otherPlayer)))
 
     // initilizes game and provides initial actions
-    let startGame () : Board * ActionResult = 
+    let startGame () : Board * GameState = 
         let initialBoard = getInitialBoard
         let availablePositions = getAvailablePositions initialBoard
 
         let (_,availableActions) = prepareActions playAction initialBoard X availablePositions
         (initialBoard, GameInProgress((availableActions, X)))
+
+        // initilizes game and provides initial actions
+    let startGame2 () : Board * list<Action*CellPosition> * Player = 
+        let initialBoard = getInitialBoard
+        let availablePositions = getAvailablePositions initialBoard
+
+        let (_,availableActions) = prepareActions playAction initialBoard X availablePositions
+        (initialBoard, availableActions, X)

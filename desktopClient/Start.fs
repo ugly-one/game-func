@@ -1,5 +1,4 @@
 namespace desktopClient
-open webapiServer.Controllers
 open Elmish
 open Microsoft.AspNetCore.SignalR.Client
 
@@ -8,7 +7,7 @@ module Start =
     open Avalonia.Controls
     open Avalonia.FuncUI.DSL
     open Avalonia.Layout
-
+    open GameBoard
     type Message = 
         | Start
         | JoinExisting
@@ -17,30 +16,28 @@ module Start =
         | SendTestMessage
     
     type State = 
-        | Empty of HubConnection
+        | Empty 
         | GameInProgress of GameStateResponse 
 
-    let init hubConnection = Empty hubConnection, Cmd.none
+    let init = Empty, Cmd.none
 
-    let update msg (state : State) = 
-        
-        match state with 
-        | Empty hubConnection -> hubConnection.StartAsync() |> ignore
-        | GameInProgress -> ()
+    let update testConnection connectToGame move msg (state : State)  = 
         
         match msg with 
         | JoinExisting -> (GameInProgress (GameBoard.initJoinGame ())), Cmd.none
         | UpdateFromServer response -> GameInProgress response, Cmd.none
-        | Start -> (GameInProgress (GameBoard.initNewGame())), Cmd.none
+        | Start -> 
+            (GameInProgress (GameBoard.initNewGame())), Cmd.none
         | BoardMsg gameMsg ->
             match state with 
             | Empty _ -> failwith "he?!"
             | GameInProgress state -> (GameInProgress (GameBoard.update gameMsg state)), Cmd.none
         | SendTestMessage -> 
             match state with 
-            | Empty hubConnection -> 
-                hubConnection.StartAsync() |> ignore
-                hubConnection.SendAsync("Test") |> ignore
+            | Empty -> 
+                testConnection ()
+                connectToGame ()
+                move ()
                 state, Cmd.none
             | GameInProgress -> state, Cmd.none
         

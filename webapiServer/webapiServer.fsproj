@@ -8,9 +8,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game.fs" />
     <Compile Include="Something.fs" />
-    <Compile Include="Controllers/GameController.fs" />
+    <Compile Include="GameHub.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -11,8 +11,10 @@ module GameBoard =
     open Corelib.Game
     open UI
     open Newtonsoft.Json
-    open webapiServer.Controllers
-
+    type GameStateResponse = {
+        Board: Board
+        Actions: (CellPosition*string) list
+    }
     let gameUrl = "http://localhost:5000/Game/"  
 
     let initNewGame () = 
