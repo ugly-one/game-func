@@ -29,19 +29,27 @@ type MainWindow() as this =
         let something state =
 
             let sub (dispatch: Start.Message -> unit) =
-                let invoke message = 
-                    printfn "received update from server"
-                    let board = JsonConvert.DeserializeObject<Board> message
+                let invoke board actions = 
+                    printfn "received update from server %s" actions
+                    let board = JsonConvert.DeserializeObject<Board> board
                     UI.printBoardWithEmptyFieldsAndPlayers board
-                    // dispatch (Start.UpdateFromServer a)
 
-                connection.On<string>("Board", fun s -> invoke s )  |> ignore
+                    let actions = JsonConvert.DeserializeObject<list<CellPosition>> actions
+
+                    let moves = actions |> List.map (fun cellPos -> 
+                        cellPos , fun () -> 
+                                    let (h, v) = Corelib.Game.toInts cellPos
+                                    connection.SendAsync("Move", h, v) |> ignore) |> Map.ofList
+
+                    dispatch (Start.UpdateFromServer (board, actions))
+
+                connection.On<string, string>("GameChanged", fun board actions -> invoke board actions )  |> ignore
                 
             Cmd.ofSub sub
         
         let test () = connection.SendAsync("Test") |> ignore
         let connect () = connection.SendAsync("Connect") |> ignore
-        let move () = connection.SendAsync("Move", 2, 2) |> ignore
+        let move (h: int) (v:int) = connection.SendAsync("Move", h, v) |> ignore
         
         Elmish.Program.mkProgram (fun () -> Start.init ) (Start.update test connect move) Start.view
         |> Program.withHost this

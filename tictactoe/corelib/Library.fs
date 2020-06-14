@@ -108,3 +108,35 @@ module Game =
 
         let (_,availableActions) = prepareActions playAction initialBoard X availablePositions
         (initialBoard, availableActions, X)
+
+
+    // TODO move it somewhere else where both projects can access it
+    let createHPosition pos = 
+        if pos = 0 then Left 
+        elif pos = 1 then HCenter 
+        elif pos = 2 then Right 
+        else Right
+
+
+    let createVPosition pos = 
+        if pos = 0 then Top
+        elif pos = 1 then VCenter 
+        elif pos = 2 then Bottom 
+        else Bottom
+
+    let toPosition (hp, vp) =
+        (createHPosition hp, createVPosition vp)
+
+    let toInts (cellPosition: CellPosition) = 
+        let (h, v) = cellPosition
+        let _h = 
+            match h with 
+            | Left -> 0
+            | HCenter -> 1
+            | Right -> 2
+        let _v = 
+            match v with
+            | Top -> 0
+            | VCenter -> 1
+            | Bottom -> 2
+        (_h,_v)

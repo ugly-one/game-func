@@ -37,13 +37,28 @@ module GameHub
     let isNextPlayer ((actions, player) : ((Action*CellPosition) list * Player)) player2 = 
         player = player2
 
+    let swap list = list |> List.map (fun (a,b) -> (b,a))
     let convertToMapOfPositionToAction list = list |> List.map (fun (a,b) -> (b,a)) |> Map.ofList
+    
+    type AvailableActions = (CellPosition) list
+
     type Game() =
         let mutable boardAndGameState = startGame ()
         let mutable playersConnections = BothNotConnected
 
+        member _.GetAvailableActions () = 
+            let (_, gameState) = boardAndGameState
+            let actionsList = 
+                match gameState with 
+                | GameWon _ -> List.empty
+                | GameTied -> List.empty
+                | GameInProgress (actions, player) -> 
+                    List.map (fun (a,c) -> c) actions
+
+            JsonConvert.SerializeObject actionsList
+
         member _.GetBoard () = 
-            let (board, gameState) = boardAndGameState
+            let (board, _) = boardAndGameState
             JsonConvert.SerializeObject board
 
         member _.AddPlayer connectionId =
@@ -76,6 +91,8 @@ module GameHub
                             boardAndGameState <- action ()
                     else printfn "you are not the next player to make a move"
 
+
+
     type GameHub (game : Game) =
         inherit Hub()
 
@@ -85,12 +102,17 @@ module GameHub
         member x.Connect () = 
             printfn "Connect request %s"  x.Context.ConnectionId
             game.AddPlayer x.Context.ConnectionId
+            // TODO I should return available actions only for that connection/player
+            x.Clients.Caller.SendAsync("GameChanged", game.GetBoard(), game.GetAvailableActions ()) |> ignore
 
         member x.Move posX posY = 
             printfn "Move request: %i %i" posX posY
             game.Move posX posY x.Context.ConnectionId
             let board = game.GetBoard()
-            x.Clients.All.SendAsync("Board", board)
+            let actions = game.GetAvailableActions ()
+            // TODO send available actions to all clients 
+            x.Clients.Caller.SendAsync("GameChanged", board, actions) |> ignore
+            x.Clients.Others.SendAsync("GameChanged", board, actions) |> ignore 
             
 
 

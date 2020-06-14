@@ -10,50 +10,26 @@ module GameBoard =
     open Avalonia.Layout
     open Corelib.Game
     open UI
-    open Newtonsoft.Json
+
+    type AvailableActions = (CellPosition) list
+
     type GameStateResponse = {
         Board: Board
-        Actions: (CellPosition*string) list
+        Actions: AvailableActions
     }
-    let gameUrl = "http://localhost:5000/Game/"  
 
-    let initNewGame () = 
-        let client = new HttpClient()
-        let requestTask = client.GetStringAsync(gameUrl + "start")
-        requestTask.Wait()
-        let response = requestTask.Result
-        printfn "%s" response
-        JsonConvert.DeserializeObject<GameStateResponse> response
 
-    let initJoinGame () = 
-        let client = new HttpClient()
-        let requestTask = client.GetStringAsync(gameUrl + "game")
-        requestTask.Wait()
-        let response = requestTask.Result
-        printfn "%s" response
-        JsonConvert.DeserializeObject<GameStateResponse> response
+    let update msg state =
+        state
 
-    type Msg = 
-        | CellClicked of string
-
-    let update (msg: Msg) state : GameStateResponse =
-        match msg with
-        | CellClicked (positionString) -> 
-            printfn "button clicked"
-            let client = new HttpClient()
-            let requestUrl = gameUrl + "move/" + positionString
-            client.GetStringAsync(requestUrl) |> ignore
-            state
-
-    let view (state: GameStateResponse) (dispatch) =
-        let getDispatchFunction cell  = 
-            let map =  Map.ofList state.Actions
-            match Map.tryFind cell.Pos map with 
-            | None -> ()
-            | Some guid -> dispatch (CellClicked guid)
+    let view (state: Board) dispatch =
+        // let getDispatchFunction cell  = 
+        //     match Map.tryFind cell.Pos actionsMap with 
+        //     | None -> fun () -> ()
+        //     | Some dispatch -> dispatch
         
         let cells = 
-            state.Board |> List.map (fun cell -> Cell.view cell (fun _ -> getDispatchFunction cell )) |> List.map generalize
+            state |> List.map (fun cell -> Cell.view cell dispatch) |> List.map generalize
 
         Grid.create [ 
               Grid.rowDefinitions (RowDefinitions("50,50,50"))

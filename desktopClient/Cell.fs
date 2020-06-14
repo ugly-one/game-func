@@ -11,6 +11,9 @@ module Cell =
     let update () state =
         state
 
+    type CellMessage = 
+    | CellClicked of CellPosition
+
     let view cell dispatch =
         let convertPosToNumber (hPos,vPos) = 
             let vPosNr = match vPos with 
@@ -33,5 +36,5 @@ module Cell =
             Button.column yPos
             Button.borderThickness (Thickness 2.0)
             Button.borderBrush "White"
-            Button.onClick ((fun a -> dispatch ()), Always)
+            Button.onClick ((fun a -> dispatch (CellClicked (cell.Pos))), Always)
             Button.content cellContent ]

@@ -1,6 +1,7 @@
 namespace desktopClient
 open Elmish
 open Microsoft.AspNetCore.SignalR.Client
+open Corelib.Game
 
 module Start = 
     
@@ -11,33 +12,43 @@ module Start =
     type Message = 
         | Start
         | JoinExisting
-        | UpdateFromServer of GameStateResponse
-        | BoardMsg of GameBoard.Msg
+        | UpdateFromServer of Board * CellPosition list
+        | BoardMsg of Cell.CellMessage
         | SendTestMessage
     
     type State = 
         | Empty 
-        | GameInProgress of GameStateResponse 
+        | GameInProgress of Board * CellPosition list
 
     let init = Empty, Cmd.none
 
     let update testConnection connectToGame move msg (state : State)  = 
         
         match msg with 
-        | JoinExisting -> (GameInProgress (GameBoard.initJoinGame ())), Cmd.none
-        | UpdateFromServer response -> GameInProgress response, Cmd.none
+        | JoinExisting -> 
+            connectToGame ()
+            state, Cmd.none
+        | UpdateFromServer (board, clickableCells) -> GameInProgress  (board, clickableCells), Cmd.none
         | Start -> 
-            (GameInProgress (GameBoard.initNewGame())), Cmd.none
+            connectToGame ()
+            state, Cmd.none
         | BoardMsg gameMsg ->
             match state with 
             | Empty _ -> failwith "he?!"
-            | GameInProgress state -> (GameInProgress (GameBoard.update gameMsg state)), Cmd.none
+            | GameInProgress  (board, clickableCells) -> 
+                let a = gameMsg
+                match a with 
+                | Cell.CellClicked pos -> 
+                    let (h, v) = Corelib.Game.toInts pos
+                    move h v
+                state, Cmd.none
+                // (GameInProgress (GameBoard.update gameMsg  (board, clickableCells))), Cmd.none
         | SendTestMessage -> 
             match state with 
             | Empty -> 
                 testConnection ()
                 connectToGame ()
-                move ()
+                move 1 2
                 state, Cmd.none
             | GameInProgress -> state, Cmd.none
         
@@ -68,8 +79,8 @@ module Start =
                         Button.width 200.0
                         ] 
                        ]]
-        | GameInProgress gameState -> 
-            let gameBoard = GameBoard.view gameState (fun boardMsg -> (dispatch (BoardMsg boardMsg)))
+        | GameInProgress  (board, clickableCells) -> 
+            let gameBoard = GameBoard.view board  (fun (cellMsg) -> dispatch (BoardMsg cellMsg))
             StackPanel.create [ 
                 StackPanel.children [ gameBoard ]
                 StackPanel.horizontalAlignment HorizontalAlignment.Center
