@@ -39,8 +39,10 @@ module Start =
                 let a = gameMsg
                 match a with 
                 | Cell.CellClicked pos -> 
-                    let (h, v) = Corelib.Game.toInts pos
-                    move h v
+                    if List.contains pos clickableCells then 
+                        let (h, v) = Corelib.Game.toInts pos
+                        move h v
+                    else ()
                 state, Cmd.none
                 // (GameInProgress (GameBoard.update gameMsg  (board, clickableCells))), Cmd.none
         | SendTestMessage -> 

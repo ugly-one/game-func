@@ -110,8 +110,9 @@ module GameHub
             game.Move posX posY x.Context.ConnectionId
             let board = game.GetBoard()
             let actions = game.GetAvailableActions ()
-            // TODO send available actions to all clients 
-            x.Clients.Caller.SendAsync("GameChanged", board, actions) |> ignore
+            // TODO getAvailableActions should take player and return actions for that player
+            // I shouldn't know here that the caller won't have any actions now
+            x.Clients.Caller.SendAsync("GameChanged", board, JsonConvert.SerializeObject list.Empty) |> ignore
             x.Clients.Others.SendAsync("GameChanged", board, actions) |> ignore 
             
 
