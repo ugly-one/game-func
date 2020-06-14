@@ -10,6 +10,7 @@ open Avalonia.FuncUI.Components.Hosts
 open Microsoft.AspNetCore.SignalR.Client
 open Newtonsoft.Json
 open GameBoard
+open Corelib.Game
 
 type MainWindow() as this =
     inherit HostWindow()
@@ -29,13 +30,12 @@ type MainWindow() as this =
 
             let sub (dispatch: Start.Message -> unit) =
                 let invoke message = 
-                    printfn "%s" message
                     printfn "received update from server"
-                    let a = JsonConvert.DeserializeObject<GameStateResponse> message
-                    UI.printBoardWithEmptyFieldsAndPlayers a.Board
-                    dispatch (Start.UpdateFromServer a)
+                    let board = JsonConvert.DeserializeObject<Board> message
+                    UI.printBoardWithEmptyFieldsAndPlayers board
+                    // dispatch (Start.UpdateFromServer a)
 
-                connection.On<string>("Test2", fun s -> invoke s )  |> ignore
+                connection.On<string>("Board", fun s -> invoke s )  |> ignore
                 
             Cmd.ofSub sub
         

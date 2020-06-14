@@ -4,6 +4,7 @@ module GameHub
     open Microsoft.AspNetCore.SignalR;
     open Corelib.Game
     open Something
+    open Newtonsoft.Json
     
     type Connection = Connection of string
     type PlayersConnectionIds = {
@@ -40,6 +41,10 @@ module GameHub
     type Game() =
         let mutable boardAndGameState = startGame ()
         let mutable playersConnections = BothNotConnected
+
+        member _.GetBoard () = 
+            let (board, gameState) = boardAndGameState
+            JsonConvert.SerializeObject board
 
         member _.AddPlayer connectionId =
             let newPlayersConnections = addPlayer playersConnections (Connection connectionId)
@@ -84,6 +89,8 @@ module GameHub
         member x.Move posX posY = 
             printfn "Move request: %i %i" posX posY
             game.Move posX posY x.Context.ConnectionId
+            let board = game.GetBoard()
+            x.Clients.All.SendAsync("Board", board)
             
 
 
