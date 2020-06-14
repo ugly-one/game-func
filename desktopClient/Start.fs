@@ -8,10 +8,9 @@ module Start =
     open Avalonia.Controls
     open Avalonia.FuncUI.DSL
     open Avalonia.Layout
-    open GameBoard
+
     type Message = 
         | Start
-        | JoinExisting
         | UpdateFromServer of Board * CellPosition list
         | BoardMsg of Cell.CellMessage
         | SendTestMessage
@@ -25,10 +24,8 @@ module Start =
     let update testConnection connectToGame move msg (state : State)  = 
         
         match msg with 
-        | JoinExisting -> 
-            connectToGame ()
-            state, Cmd.none
-        | UpdateFromServer (board, clickableCells) -> GameInProgress  (board, clickableCells), Cmd.none
+        | UpdateFromServer (board, clickableCells) -> 
+            GameInProgress  (board, clickableCells), Cmd.none
         | Start -> 
             connectToGame ()
             state, Cmd.none
@@ -44,7 +41,6 @@ module Start =
                         move h v
                     else ()
                 state, Cmd.none
-                // (GameInProgress (GameBoard.update gameMsg  (board, clickableCells))), Cmd.none
         | SendTestMessage -> 
             match state with 
             | Empty -> 
@@ -68,12 +64,6 @@ module Start =
                         Button.height 100.0
                         Button.width 200.0
                         ]
-                    Button.create [
-                        Button.content "Connect to existing"
-                        Button.onClick (fun _ -> dispatch JoinExisting)
-                        Button.height 100.0
-                        Button.width 200.0
-                        ] 
                     Button.create [
                         Button.content "Send message to SignalR"
                         Button.onClick (fun _ -> dispatch SendTestMessage)
