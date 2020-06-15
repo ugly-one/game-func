@@ -43,8 +43,13 @@ type MainWindow() as this =
 
                     dispatch (Start.UpdateFromServer (board, actions))
 
+                let onPlayerAssigned playerString = 
+                    let player = JsonConvert.DeserializeObject<Player> playerString
+                    printfn "PLAYER ASSIGNED %s" playerString
+
                 connection.On<string, string>("GameChanged", fun board actions -> invoke board actions )  |> ignore
-                
+                connection.On<string>("PlayerAssigned", onPlayerAssigned )  |> ignore
+
             Cmd.ofSub sub
         
         let test () = connection.SendAsync("Test") |> ignore

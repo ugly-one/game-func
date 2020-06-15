@@ -29,9 +29,9 @@ module GameHub
 
     let addPlayer playersConnections connectionId =
         match playersConnections with 
-        | BothNotConnected -> Ok (PlayerXConnected connectionId)
+        | BothNotConnected -> Ok (X, PlayerXConnected connectionId)
         | PlayerXConnected playerX -> 
-            if playerX = connectionId then Error "you are already connected" else Ok (BothPlayersConnected {X = playerX; Y = connectionId})
+            if playerX = connectionId then Error "you are already connected" else Ok ( Y, BothPlayersConnected {X = playerX; Y = connectionId})
         | BothPlayersConnected b -> Error "Both players are already connected, no need for more"
 
     let isNextPlayer ((actions, player) : ((Action*CellPosition) list * Player)) player2 = 
@@ -73,11 +73,14 @@ module GameHub
         member _.AddPlayer connectionId =
             let newPlayersConnections = addPlayer playersConnections connectionId
             match newPlayersConnections with 
-            | Error msg -> printfn "%s" msg
-            | Ok connections -> 
+            | Error msg -> 
+                printfn "%s" msg
+                None
+            | Ok (player, connections) -> 
                 playersConnections <- connections
                 let (Connection connectionAsString) = connectionId
                 printfn "player %s added to the game" connectionAsString
+                Some player
 
         member _.Move posX posY connectionId = 
             let (board, gameState) = boardAndGameState
@@ -110,9 +113,13 @@ module GameHub
         member x.Connect () = 
             printfn "Connect request %s"  x.Context.ConnectionId
             let connection = Connection x.Context.ConnectionId
-            game.AddPlayer connection
-            let actions = game.GetAvailableActions connection
-            x.Clients.Caller.SendAsync("GameChanged", game.GetBoard(), JsonConvert.SerializeObject actions) |> ignore
+            let player = game.AddPlayer connection
+            match player with 
+            | None -> ()
+            | Some p -> 
+                let actions = game.GetAvailableActions connection
+                x.Clients.Caller.SendAsync("PlayerAssigned", JsonConvert.SerializeObject p) |> ignore
+                x.Clients.Caller.SendAsync("GameChanged", game.GetBoard(), JsonConvert.SerializeObject actions) |> ignore
 
         member x.Move posX posY = 
             printfn "Move request: %i %i" posX posY
