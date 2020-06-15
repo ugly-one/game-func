@@ -46,24 +46,20 @@ module GameHub
         let mutable boardAndGameState = startGame ()
         let mutable playersConnections = BothNotConnected
 
-        member _.GetNextPlayerConnectionId () = 
-            let (_, gameState) = boardAndGameState
-            match gameState with 
-            | GameWon _ -> None
-            | GameTied -> None
-            | GameInProgress (actions, player) -> 
-                match playersConnections with
-                | BothNotConnected -> None
-                | PlayerXConnected id -> if player = X then Some id else None
-                | BothPlayersConnected ids -> if player = X then Some ids.X else Some ids.Y
+        member _.GetOtherPlayerConnectionId connectionId = 
+            match playersConnections with
+            | BothNotConnected -> None
+            | PlayerXConnected id -> if connectionId = id then None else Some id
+            | BothPlayersConnected ids -> if ids.X = connectionId then Some ids.Y else Some ids.X
 
-        member _.GetAvailableActions () = 
+        member _.GetAvailableActions connectionId = 
             let (_, gameState) = boardAndGameState
             let actionsList = 
                 match gameState with 
                 | GameWon _ -> List.empty
                 | GameTied -> List.empty
                 | GameInProgress (actions, player) -> 
+
                     List.map (fun (a,c) -> c) actions
 
             JsonConvert.SerializeObject actionsList
@@ -123,8 +119,8 @@ module GameHub
             // I shouldn't know here that the caller won't have any actions now
             x.Clients.Caller.SendAsync("GameChanged", board, JsonConvert.SerializeObject list.Empty) |> ignore
 
-            // send update to the other player
-            let nextPlayerConnectionId = game.GetNextPlayerConnectionId ()
+            // send update to the other player (if connected)
+            let nextPlayerConnectionId = game.GetOtherPlayerConnectionId (Connection x.Context.ConnectionId)
             match nextPlayerConnectionId with
             | None -> ()
             | Some id -> 
