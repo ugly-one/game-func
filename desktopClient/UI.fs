@@ -1,6 +1,8 @@
-module UI 
+namespace desktopClient
+open Corelib.Game
 
-    open Corelib.Game
+module UI =
+
     let getPlayerRepresentation player = 
         match player with 
         | X -> "X"
@@ -42,4 +44,3 @@ module UI
 
     let printBoardWithEmptyFieldsAndPlayers board = 
         printBoard board (fun _ -> " ") getPlayerRepresentation
-

@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="UI.fs" />
     <Compile Include="Cell.fs" />
     <Compile Include="GameBoard.fs" />
     <Compile Include="Start.fs" />
@@ -14,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\tictactoe\corelib\corelib.fsproj" />
-    <ProjectReference Include="..\tictactoe\consoleApp\consoleApp.fsproj" />
     <ProjectReference Include="..\webapiServer\webapiServer.fsproj" />
   </ItemGroup>
 
