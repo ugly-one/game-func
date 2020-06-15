@@ -54,27 +54,30 @@ module GameHub
 
         member _.GetAvailableActions connectionId = 
             let (_, gameState) = boardAndGameState
-            let actionsList = 
-                match gameState with 
-                | GameWon _ -> List.empty
-                | GameTied -> List.empty
-                | GameInProgress (actions, player) -> 
-
-                    List.map (fun (a,c) -> c) actions
-
-            JsonConvert.SerializeObject actionsList
+            match gameState with 
+            | GameWon _ -> List.empty
+            | GameTied -> List.empty
+            | GameInProgress (actions, player) -> 
+                match playersConnections with 
+                | BothNotConnected -> List.empty
+                | PlayerXConnected conn -> if conn = connectionId && player = X then List.map (fun (a,c) -> c) actions else List.empty
+                | BothPlayersConnected connections -> 
+                    if (connectionId = connections.X && player = X) || (connectionId = connections.Y && player = Y)
+                    then List.map (fun (a,c) -> c) actions
+                    else List.empty
 
         member _.GetBoard () = 
             let (board, _) = boardAndGameState
             JsonConvert.SerializeObject board
 
         member _.AddPlayer connectionId =
-            let newPlayersConnections = addPlayer playersConnections (Connection connectionId)
+            let newPlayersConnections = addPlayer playersConnections connectionId
             match newPlayersConnections with 
             | Error msg -> printfn "%s" msg
             | Ok connections -> 
                 playersConnections <- connections
-                printfn "player %s added to the game" connectionId
+                let (Connection connectionAsString) = connectionId
+                printfn "player %s added to the game" connectionAsString
 
         member _.Move posX posY connectionId = 
             let (board, gameState) = boardAndGameState
@@ -82,7 +85,7 @@ module GameHub
             | GameWon _ -> printfn "game is done"
             | GameTied -> printfn "game is done"
             | GameInProgress (actions, nextPlayer) -> 
-                let maybePlayer = getPlayer playersConnections (Connection connectionId)
+                let maybePlayer = getPlayer playersConnections connectionId
                 match maybePlayer with 
                 | None -> printfn "not a registered player"
                 | Some player -> 
@@ -106,28 +109,28 @@ module GameHub
 
         member x.Connect () = 
             printfn "Connect request %s"  x.Context.ConnectionId
-            game.AddPlayer x.Context.ConnectionId
-            // TODO I should return available actions only for that connection/player
-            x.Clients.Caller.SendAsync("GameChanged", game.GetBoard(), game.GetAvailableActions ()) |> ignore
+            let connection = Connection x.Context.ConnectionId
+            game.AddPlayer connection
+            let actions = game.GetAvailableActions connection
+            x.Clients.Caller.SendAsync("GameChanged", game.GetBoard(), JsonConvert.SerializeObject actions) |> ignore
 
         member x.Move posX posY = 
             printfn "Move request: %i %i" posX posY
-            game.Move posX posY x.Context.ConnectionId
+            let connection = Connection x.Context.ConnectionId
+            game.Move posX posY connection
             let board = game.GetBoard()
-            let actions = game.GetAvailableActions ()
-            // TODO getAvailableActions should take player and return actions for that player
-            // I shouldn't know here that the caller won't have any actions now
-            x.Clients.Caller.SendAsync("GameChanged", board, JsonConvert.SerializeObject list.Empty) |> ignore
+            let actionsForCurrentPlayer = game.GetAvailableActions connection
+            x.Clients.Caller.SendAsync("GameChanged", board, JsonConvert.SerializeObject actionsForCurrentPlayer) |> ignore
 
             // send update to the other player (if connected)
-            let nextPlayerConnectionId = game.GetOtherPlayerConnectionId (Connection x.Context.ConnectionId)
+            let nextPlayerConnectionId = game.GetOtherPlayerConnectionId connection
             match nextPlayerConnectionId with
             | None -> ()
-            | Some id -> 
-                match id with // I wonder if there is a nicer way to extract id as a string from Connection
-                | Connection id_ -> 
-                    let client = x.Clients.Client id_
-                    client.SendAsync("GameChanged", board, actions) |> ignore 
-            
+            | Some nextPlayerConnection -> 
+                let actionsForOtherPlayer = game.GetAvailableActions nextPlayerConnection
+                let (Connection connectionAsString) = nextPlayerConnection
+                let client = x.Clients.Client connectionAsString
+                client.SendAsync("GameChanged", board, JsonConvert.SerializeObject actionsForOtherPlayer) |> ignore 
+        
 
 
