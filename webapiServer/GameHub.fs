@@ -46,6 +46,17 @@ module GameHub
         let mutable boardAndGameState = startGame ()
         let mutable playersConnections = BothNotConnected
 
+        member _.GetNextPlayerConnectionId () = 
+            let (_, gameState) = boardAndGameState
+            match gameState with 
+            | GameWon _ -> None
+            | GameTied -> None
+            | GameInProgress (actions, player) -> 
+                match playersConnections with
+                | BothNotConnected -> None
+                | PlayerXConnected id -> if player = X then Some id else None
+                | BothPlayersConnected ids -> if player = X then Some ids.X else Some ids.Y
+
         member _.GetAvailableActions () = 
             let (_, gameState) = boardAndGameState
             let actionsList = 
@@ -91,8 +102,6 @@ module GameHub
                             boardAndGameState <- action ()
                     else printfn "you are not the next player to make a move"
 
-
-
     type GameHub (game : Game) =
         inherit Hub()
 
@@ -113,7 +122,16 @@ module GameHub
             // TODO getAvailableActions should take player and return actions for that player
             // I shouldn't know here that the caller won't have any actions now
             x.Clients.Caller.SendAsync("GameChanged", board, JsonConvert.SerializeObject list.Empty) |> ignore
-            x.Clients.Others.SendAsync("GameChanged", board, actions) |> ignore 
+
+            // send update to the other player
+            let nextPlayerConnectionId = game.GetNextPlayerConnectionId ()
+            match nextPlayerConnectionId with
+            | None -> ()
+            | Some id -> 
+                match id with // I wonder if there is a nicer way to extract id as a string from Connection
+                | Connection id_ -> 
+                    let client = x.Clients.Client id_
+                    client.SendAsync("GameChanged", board, actions) |> ignore 
             
 
 
